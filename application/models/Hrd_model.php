@@ -40,8 +40,7 @@ class Hrd_model extends CI_Model
                 if (!in_array($v, $exclude)) {
                     $where[$v] = $input[$v];
                 } else {
-                    // print_r($v);
-                    if ($v !== 'start' && $v !== 'end') {
+                    if ($v !== 'start' && $v !== 'length') {
                         foreach ($input[$v] as $kw => $vw) {
                             switch ($v) {
                                 case 'wherein':
