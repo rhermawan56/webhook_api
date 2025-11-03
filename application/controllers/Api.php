@@ -245,7 +245,7 @@ class Api extends CI_Controller
 
             $this->output
                 ->set_content_type('application/json')
-                ->set_output(json_encode(['status' => true, 'data' => $data]));
+                ->set_output(json_encode(['status' => true, 'rows' => $data['rows'],'data' => $data['data']]));
         } catch (Exception $e) {
             $this->output
                 ->set_status_header(401)

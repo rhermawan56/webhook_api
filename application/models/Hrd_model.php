@@ -108,9 +108,11 @@ class Hrd_model extends CI_Model
             }
         }
 
-        $data = $data->limit($length, $start)->get($table)->result();
+        $response['rows'] = clone $data;
+        $response['rows'] = $response['rows']->get($table)->num_rows();
+        $response['data'] = $data->limit($length, $start)->get($table)->result();
 
-        return $data;
+        return $response;
     }
 
     private function getData($input, $table)
