@@ -32,8 +32,12 @@ class Hrd_model extends CI_Model
         $length = 100;
         $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
 
-        if (stripos($input['company'], 'sinar terang') || stripos($input['company'], 'sinarterang')) {
-            $data = $this->dbs_st;
+        if (isset($input['company'])) {
+            if (stripos($input['company'], 'sinar terang') || stripos($input['company'], 'sinarterang')) {
+                $data = $this->dbs_st;
+            } else {
+                $data = $this->dbs;
+            }
         } else {
             $data = $this->dbs;
         }
