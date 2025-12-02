@@ -276,6 +276,28 @@ class Api extends CI_Controller
         }
     }
 
+    public function get_employeesbackup()
+    {
+        $token = $this->headerAuth();
+        $input = json_decode(trim(file_get_contents('php://input')), true);
+        // print_r($input);die;
+
+        try {
+            $decoded = JWT::decode($token, new Key($this->key, 'HS256'));
+            $user = $decoded->data;
+            $data = $this->hr->get_employees($input);
+
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => true, 'rows' => $data['rows'],'data' => $data['data']]));
+        } catch (Exception $e) {
+            $this->output
+                ->set_status_header(401)
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => false, 'message' => $e->getMessage()]));
+        }
+    }
+
     public function get_employees()
     {
         $token = $this->headerAuth();

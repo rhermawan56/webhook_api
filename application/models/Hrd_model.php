@@ -16,7 +16,7 @@ class Hrd_model extends CI_Model
         $this->dbs_st = $this->load->database('hrd_st', TRUE);
     }
 
-    public function get_employees($input)
+    public function get_employeesbackup($input)
     {
         $table = 'karyawan_data';
         $where = [];
@@ -33,7 +33,7 @@ class Hrd_model extends CI_Model
         $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
 
         if (isset($input['company'])) {
-            if (stripos($input['company'], 'sinar terang') || stripos($input['company'], 'sinarterang')) {
+            if (stripos($input['company'], 'SINAR TERANG') || stripos($input['company'], 'SINARTERANG')) {
                 $data = $this->dbs_st;
             } else {
                 $data = $this->dbs;
@@ -126,6 +126,122 @@ class Hrd_model extends CI_Model
         return $response;
     }
 
+    public function get_employees($input)
+    {
+        $table = 'karyawan_data';
+        $where = [];
+        $wherein = [];
+        $wherenotin = [];
+        $raw = [
+            "tgl_terima <= '" . date('Y-m-d') . "'",
+            "statuskaryawan <> 'Keluar'",
+            "del = '0'",
+            "tgl_keluar = '0000-00-00'"
+        ];
+        $start = 0;
+        $length = 100;
+        $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
+
+        if (isset($input['company'])) {
+            if (stripos($input['company'], 'SINAR TERANG') || stripos($input['company'], 'SINARTERANG')) {
+                $data = $this->dbs_st;
+            } else {
+                $data = $this->dbs;
+            }
+        } else {
+            $data = $this->dbs;
+        }
+
+        if ($input) {
+            $dataKeys = array_keys($input);
+
+            foreach ($dataKeys as $k => $v) {
+                if (!in_array($v, $exclude)) {
+                    if ($v !== 'company') {
+                        if ($v == 'kar_id' && stripos($input['company'], 'SINAR TERANG')) {
+                            $where[$v] = substr($input[$v], 2);
+                        } else {
+                            $where[$v] = $input[$v];
+                        }
+                    }
+                } else {
+                    if ($v !== 'start' && $v !== 'length') {
+                        foreach ($input[$v] as $kw => $vw) {
+                            switch ($v) {
+                                case 'wherein':
+                                    if ($vw['field'] !== 'kar_idxx') {
+                                        if ($vw['values']) {
+                                            $wherein[] = [
+                                                'field' => $vw['field'],
+                                                'values' => $vw['values']
+                                            ];
+                                        }
+                                    }
+                                    break;
+
+                                case 'wherenotin':
+                                    if ($vw['values']) {
+                                        $wherenotin[] = [
+                                            'field' => $vw['field'],
+                                            'values' => $vw['values']
+                                        ];
+                                    }
+                                    break;
+
+                                case 'raw':
+                                    $raw[] = $vw;
+                                    break;
+                            }
+                        }
+                    } else {
+                        switch ($v) {
+                            case 'start':
+                                $start = $input['start'];
+                                break;
+                            case 'length':
+                                $length = $input['length'];
+                                break;
+                        }
+                    }
+                }
+            }
+
+            if ($where) {
+                $data = $data->where($where);
+            }
+
+            if ($wherein) {
+                foreach ($wherein as $k => $v) {
+                    $data = $data->where_in($v['field'], $v['values']);
+                }
+            }
+
+            if ($wherenotin) {
+                foreach ($wherenotin as $k => $v) {
+                    $data = $data->where_not_in($v['field'], $v['values']);
+                }
+            }
+
+            if ($raw) {
+                foreach ($raw as $k => $v) {
+                    $data = $data->where("{$v}", null, false);
+                }
+            }
+        } else {
+            if ($raw) {
+                foreach ($raw as $k => $v) {
+                    $data = $data->where("{$v}", null, false);
+                }
+            }
+        }
+
+        $response['rows'] = clone $data;
+        $response['rows'] = $response['rows']->get($table)->num_rows();
+        $response['data'] = $data->limit($length, $start)->get($table)->result();
+
+        return $response;
+    }
+
     private function getData($input, $table)
     {
         $where = [];
@@ -136,7 +252,18 @@ class Hrd_model extends CI_Model
         $length = 100;
         $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
 
-        $data = $this->dbs;
+        
+        if (isset($input['company'])) {
+            if (stripos($input['company'], 'SINAR TERANG') || stripos($input['company'], 'SINARTERANG')) {
+                unset($input['company']);
+                $data = $this->dbs_st;
+            } else {
+                unset($input['company']);
+                $data = $this->dbs;
+            }
+        } else {
+            $data = $this->dbs;
+        }
 
         if ($input) {
             $dataKeys = array_keys($input);
@@ -221,10 +348,15 @@ class Hrd_model extends CI_Model
 
     public function attendance_insert($data)
     {
+        if (stripos($data['company'], 'SINAR TERANG') || stripos($data['company'], 'SINARTERANG')) {
+            $data['karyawan_id'] = substr($data['karyawan_id'],2);
+        }
+
         $check = $this->getData(
             [
                 'tanggal' => $data['tgl_absen'],
                 'kar_id' => $data['karyawan_id'],
+                'company' => $data['company']
             ],
             'absensi_d'
         );
@@ -280,7 +412,7 @@ class Hrd_model extends CI_Model
                     $dataInsert['lokasi'] = '1';
                 }
 
-                if (stripos($data['company'], 'sinar terang') || stripos($data['company'], 'sinarterang')) {
+                if (stripos($data['company'], 'SINAR TERANG') || stripos($data['company'], 'SINARTERANG')) {
                     unset($dataInsert['lokasi']);
                     return $this->dbs_st->insert('absensi_d', $dataInsert);
                 } else {
