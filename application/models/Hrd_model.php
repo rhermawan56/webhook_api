@@ -33,7 +33,7 @@ class Hrd_model extends CI_Model
         $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
 
         if (isset($input['company'])) {
-            if (stripos($input['company'], 'SINAR TERANG') || stripos($input['company'], 'SINARTERANG')) {
+            if (stripos($input['company'], 'SINAR TERANG') !== false || stripos($input['company'], 'SINARTERANG') !== false) {
                 $data = $this->dbs_st;
             } else {
                 $data = $this->dbs;
@@ -143,7 +143,7 @@ class Hrd_model extends CI_Model
         $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
 
         if (isset($input['company'])) {
-            if (stripos($input['company'], 'SINAR TERANG') || stripos($input['company'], 'SINARTERANG')) {
+            if (stripos($input['company'], 'SINAR TERANG') !== false || stripos($input['company'], 'SINARTERANG') !== false) {
                 $data = $this->dbs_st;
             } else {
                 $data = $this->dbs;
@@ -158,7 +158,7 @@ class Hrd_model extends CI_Model
             foreach ($dataKeys as $k => $v) {
                 if (!in_array($v, $exclude)) {
                     if ($v !== 'company') {
-                        if ($v == 'kar_id' && stripos($input['company'], 'SINAR TERANG')) {
+                        if ($v == 'kar_id' && stripos($input['company'], 'SINAR TERANG') !== false) {
                             $where[$v] = substr($input[$v], 2);
                         } else {
                             $where[$v] = $input[$v];
@@ -252,9 +252,9 @@ class Hrd_model extends CI_Model
         $length = 100;
         $exclude = ['wherein', 'wherenotin', 'raw', 'start', 'length'];
 
-        
+
         if (isset($input['company'])) {
-            if (stripos($input['company'], 'SINAR TERANG') || stripos($input['company'], 'SINARTERANG')) {
+            if (stripos($input['company'], 'SINAR TERANG') !== false || stripos($input['company'], 'SINARTERANG') !== false) {
                 unset($input['company']);
                 $data = $this->dbs_st;
             } else {
@@ -348,8 +348,8 @@ class Hrd_model extends CI_Model
 
     public function attendance_insert($data)
     {
-        if (stripos($data['company'], 'SINAR TERANG') || stripos($data['company'], 'SINARTERANG')) {
-            $data['karyawan_id'] = substr($data['karyawan_id'],2);
+        if (stripos($data['company'], 'SINAR TERANG') !== false || stripos($data['company'], 'SINARTERANG') !== false) {
+            $data['karyawan_id'] = substr($data['karyawan_id'], 2);
         }
 
         $check = $this->getData(
@@ -371,7 +371,7 @@ class Hrd_model extends CI_Model
 
     private function insertDataAttendance($data)
     {
-        if (stripos(strtolower($data['company']), 'sinar terang') || stripos(strtolower($data['company']), 'sinarterang')) {
+        if (stripos(strtolower($data['company']), 'sinar terang') !== false || stripos(strtolower($data['company']), 'sinarterang') !== false) {
             $data['karyawan_id'] = "80{$data['karyawan_id']}";
         }
 
@@ -386,10 +386,11 @@ class Hrd_model extends CI_Model
                     'raw' => [
                         "drtgl <= '{$data['tgl_absen']}' AND ketgl >= '{$data['tgl_absen']}'"
                     ]
-                ]
-            , 'karyawan_shift');
+                ],
+                'karyawan_shift'
+            );
             // return $shift;
-    
+
             if ($shift) {
                 $shift = $shift[0];
 
@@ -407,18 +408,20 @@ class Hrd_model extends CI_Model
                     'validasi_a' => '0',
                     'del' => '0',
                     'group' => $employees->group,
-                    'shift' => $shift->id_shift
+                    'shift' => $shift->id_shift,
                 ];
 
                 $dataInsert[$this->verify[$data['status']]] = $data['jam'];
 
-                if (stripos(strtolower($data['company']), 'jembes') || stripos(strtolower($data['company']), 'padamulya') || stripos(strtolower($data['company']), 'bandung')) {
-                    $dataInsert['lokasi'] = '2';
-                } else {
-                    $dataInsert['lokasi'] = '1';
+                if (stripos($data['company'], 'SINAR TERANG') !== true || stripos($data['company'], 'SINARTERANG') !== true) {
+                    if (stripos(strtolower($data['company']), 'jembes') !== false || stripos(strtolower($data['company']), 'padamulya') !== false || stripos(strtolower($data['company']), 'bandung') !== false) {
+                        $dataInsert['lokasi'] = $employees->lokasi;
+                    } else {
+                        $dataInsert['lokasi'] = $employees->lokasi;
+                    }
                 }
 
-                if (stripos($data['company'], 'SINAR TERANG') || stripos($data['company'], 'SINARTERANG')) {
+                if (stripos($data['company'], 'SINAR TERANG') !== false || stripos($data['company'], 'SINARTERANG') !== false) {
                     unset($dataInsert['lokasi']);
                     return $this->dbs_st->insert('absensi_d', $dataInsert);
                 } else {
@@ -439,14 +442,15 @@ class Hrd_model extends CI_Model
             'validasi_a' => '0',
         ];
 
-        if (stripos($data['company'], 'sinar terang') || stripos($data['company'], 'sinarterang')) {
+        if (stripos($data['company'], 'sinar terang') !== false || stripos($data['company'], 'sinarterang') !== false) {
             return $this->dbs_st->where('idabsensi', $attendance->idabsensi)->update('absensi_d', $updateData);
         } else {
             return $this->dbs->where('idabsensi', $attendance->idabsensi)->update('absensi_d', $updateData);
         }
     }
 
-    public function getEmployeeShift($data) {
+    public function getEmployeeShift($data)
+    {
         $table = 'karyawan_data';
         $tableJoin = 'karyawan_shift';
         $currentDate = date('Y-m-d');
@@ -486,7 +490,7 @@ class Hrd_model extends CI_Model
                         case 'raw':
                             $raw[] = $vw;
                             break;
-                        
+
                         default:
                             # code...
                             break;
@@ -495,12 +499,12 @@ class Hrd_model extends CI_Model
             }
         }
 
-        if (stripos(strtolower($data['company']), 'sinar terang') || stripos(strtolower($data['company']), 'sinarterang')) {
+        if (stripos(strtolower($data['company']), 'sinar terang') !== false || stripos(strtolower($data['company']), 'sinarterang') !== false) {
             $data = $this->dbs_st;
         } else {
             $data = $this->dbs;
         }
-        
+
         $data = $data->join("{$tableJoin} s", 's.id_group = kar.group', 'innerjoin');
 
         if ($where) {
