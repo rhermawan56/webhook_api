@@ -438,6 +438,87 @@ class Hrd_model extends CI_Model
         } else {
             return $this->dbs->where('idabsensi', $attendance->idabsensi)->update('absensi_d', $updateData);
         }
+    }
 
+    public function getEmployeeShift($data) {
+        $table = 'karyawan_data';
+        $tableJoin = 'karyawan_shift';
+        $currentDate = date('Y-m-d');
+        $where = [];
+        $wherein = [];
+        $wherenotin = [];
+        $raw = [
+            "tgl_terima <= '" . date('Y-m-d') . "'",
+            "statuskaryawan <> 'Keluar'",
+            "del = '0'",
+            "tgl_keluar = '0000-00-00'",
+        ];
+        $exclude = ['wherein', 'wherenotin', 'raw'];
+
+        $dataKeys = array_keys($data);
+
+        foreach ($dataKeys as $k => $v) {
+            if (!in_array($v, $exclude)) {
+                if ($v !== 'company') {
+                    $where["kar.{$v}"] = $data[$v];
+                }
+            } else {
+                foreach ($data[$v] as $kw => $vw) {
+                    switch ($v) {
+                        case 'wherein':
+                            if ($vw['values']) {
+                                $wherein[] = $vw;
+                            }
+                            break;
+
+                        case 'wherenotin':
+                            if ($vw['values']) {
+                                $wherenotin[] = $vw;
+                            }
+                            break;
+
+                        case 'raw':
+                            $raw[] = $vw;
+                            break;
+                        
+                        default:
+                            # code...
+                            break;
+                    }
+                }
+            }
+        }
+
+        if (stripos(strtolower($data['company']), 'sinar terang') || stripos(strtolower($data['company']), 'sinarterang')) {
+            $data = $this->dbs_st;
+        } else {
+            $data = $this->dbs;
+        }
+        
+        $data = $data->join("{$tableJoin} s", 's.id_group = kar.group', 'innerjoin');
+
+        if ($where) {
+            $data = $data->where($where);
+        }
+
+        if ($wherein) {
+            foreach ($wherein as $k => $v) {
+                $data = $data->where_in($v['field'], $v['values']);
+            }
+        }
+
+        if ($wherenotin) {
+            foreach ($wherenotin as $k => $v) {
+                $data = $data->where_not_in($v['field'], $v['values']);
+            }
+        }
+
+        if ($raw) {
+            foreach ($raw as $k => $v) {
+                $data = $data->where("{$v}", null, false);
+            }
+        }
+
+        return $data->select('kar.*, s.drtgl, s.ketgl, s.id_shift')->get("{$table} kar")->result();
     }
 }

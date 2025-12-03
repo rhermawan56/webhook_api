@@ -341,4 +341,21 @@ class Api extends CI_Controller
                 ->set_output(json_encode(['status' => false, 'message' => $e->getMessage()]));
         }
     }
+
+    public function getemployeeshift() {
+        $token = $this->headerAuth();
+        $input = json_decode(trim(file_get_contents('php://input')), true);
+        $data = $this->hr->getEmployeeShift($input);
+
+        try {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => true, 'data' => $data]));
+        } catch (\Exception $e) {
+            $this->output
+                ->set_status_header(401)
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => false, 'message' => $e->getMessage()]));
+        }
+    }
 }
