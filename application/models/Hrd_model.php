@@ -406,7 +406,7 @@ class Hrd_model extends CI_Model
 
                 $dataInsert[$this->verify[$data['status']]] = $data['jam'];
 
-                if (stripos($data['company'], 'jembes')) {
+                if (stripos(strtolower($data['company']), 'jembes') || stripos(strtolower($data['company']), 'padamulya') || stripos(strtolower($data['company']), 'bandung')) {
                     $dataInsert['lokasi'] = '2';
                 } else {
                     $dataInsert['lokasi'] = '1';
@@ -428,7 +428,9 @@ class Hrd_model extends CI_Model
     {
         $updateData = [
             'statusabsen' => 'Hadir',
-            "{$this->verify[$data['status']]}" => $data['jam']
+            "{$this->verify[$data['status']]}" => $data['jam'],
+            'validasi' => '0',
+            'validasi_a' => '0',
         ];
 
         if (stripos($data['company'], 'sinar terang') || stripos($data['company'], 'sinarterang')) {
