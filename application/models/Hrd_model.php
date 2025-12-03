@@ -371,11 +371,17 @@ class Hrd_model extends CI_Model
 
     private function insertDataAttendance($data)
     {
+        if (stripos(strtolower($data['company']), 'sinar terang') || stripos(strtolower($data['company']), 'sinarterang')) {
+            $data['karyawan_id'] = "80{$data['karyawan_id']}";
+        }
+
         $employees = $this->get_employees(['kar_id' => $data['karyawan_id'], 'company' => $data['company']]);
+
         if ($employees['data']) {
             $employees = $employees['data'][0];
             $shift = $this->getData(
                 [
+                    'company' => $data['company'],
                     'id_group' => $employees->group,
                     'raw' => [
                         "drtgl <= '{$data['tgl_absen']}' AND ketgl >= '{$data['tgl_absen']}'"
