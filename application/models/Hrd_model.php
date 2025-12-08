@@ -349,7 +349,9 @@ class Hrd_model extends CI_Model
     public function attendance_insert($data)
     {
         if (stripos($data['company'], 'SINAR TERANG') !== false || stripos($data['company'], 'SINARTERANG') !== false) {
-            $data['karyawan_id'] = substr($data['karyawan_id'], 2);
+            if (substr($data['karyawan_id'], 0, 2) == '80') {
+                $data['karyawan_id'] = substr($data['karyawan_id'], 2);
+            }
         }
 
         $check = $this->getData(
@@ -465,12 +467,23 @@ class Hrd_model extends CI_Model
         ];
         $exclude = ['wherein', 'wherenotin', 'raw'];
 
+        $karyawanId = $data['kar_id'];
+        if (stripos(strtolower($data['company']), 'sinar terang') !== false) {
+            if (substr($data['kar_id'], 0, 2) == '80') {
+                $karyawanId = substr($data['kar_id'], 2);
+            }
+        }
+
         $dataKeys = array_keys($data);
 
         foreach ($dataKeys as $k => $v) {
             if (!in_array($v, $exclude)) {
                 if ($v !== 'company') {
-                    $where["kar.{$v}"] = $data[$v];
+                    if ($v == 'kar_id') {
+                        $where["kar.{$v}"] = $karyawanId;
+                    } else {
+                        $where["kar.{$v}"] = $data[$v];
+                    }
                 }
             } else {
                 foreach ($data[$v] as $kw => $vw) {
